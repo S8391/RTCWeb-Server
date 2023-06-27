@@ -46,5 +46,3 @@
    - If you encounter any issues or errors during testing, open the browser's developer console (usually accessible through the browser's developer tools) to check for error messages.
    - Use `console.log` statements in your JavaScript code to debug and understand the flow of execution.
    - Make use of browser debugging tools and network analysis tools to identify and resolve any issues.
-
-By following these instructions, you can set up a local development environment and thoroughly test your website to ensure that it functions correctly.
