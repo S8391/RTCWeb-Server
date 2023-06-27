@@ -7,6 +7,8 @@ const videoButton = document.querySelector('#video-button');
 const shareScreenButton = document.querySelector('#share-screen-button');
 const chatInput = document.querySelector('#chat-input');
 const chatLog = document.querySelector('#chat-log');
+const basicPlanButton = document.querySelector('#basic-plan-button');
+const proPlanButton = document.querySelector('#pro-plan-button');
 
 let localStream;
 let peerConnection;
@@ -14,231 +16,222 @@ let dataChannel;
 
 const ws = new WebSocket(`wss://my-signaling-server.com?token=${encodeURIComponent(myJwt)}`);
 
-const { encrypt, decrypt } = require('./encryption.js');
-
-
 ws.addEventListener('open', () => {
-    console.log('WebSocket connection established.');
+  console.log('WebSocket connection established.');
 });
 
 ws.addEventListener('message', async (event) => {
-    const message = JSON.parse(event.data);
+  const message = JSON.parse(event.data);
 
-    if (message.type === 'offer') {
-        console.log('Received offer from remote peer:', message.offer);
+  if (message.type === 'offer') {
+    console.log('Received offer from remote peer:', message.offer);
 
-        peerConnection = createPeerConnection();
-        peerConnection.ondatachannel = (event) => {
-            dataChannel = event.channel;
-            onDataChannelCreated(dataChannel);
-        };
+    peerConnection = createPeerConnection();
+    peerConnection.ondatachannel = (event) => {
+      dataChannel = event.channel;
+      onDataChannelCreated(dataChannel);
+    };
 
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
-        localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(message.offer));
+    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-        const answer = await peerConnection.createAnswer();
-        await peerConnection.setLocalDescription(answer);
+    const answer = await peerConnection.createAnswer();
+    await peerConnection.setLocalDescription(answer);
 
-        ws.send(JSON.stringify({ type: 'answer', answer }));
-    } else if (message.type === 'answer') {
-        console.log('Received answer from remote peer:', message.answer);
-        await peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
-    } else if (message.type === 'ice-candidate') {
-        console.log('Received ICE candidate from remote peer:', message.candidate);
-        const candidate = new RTCIceCandidate(message.candidate);
-        peerConnection.addIceCandidate(candidate);
-    }
+    ws.send(JSON.stringify({ type: 'answer', answer }));
+  } else if (message.type === 'answer') {
+    console.log('Received answer from remote peer:', message.answer);
+    await peerConnection.setRemoteDescription(new RTCSessionDescription(message.answer));
+  } else if (message.type === 'ice-candidate') {
+    console.log('Received ICE candidate from remote peer:', message.candidate);
+    const candidate = new RTCIceCandidate(message.candidate);
+    peerConnection.addIceCandidate(candidate);
+  }
 });
 
-
-startButton.addEventListener('Click' , async () => {
-    try {
-        await start();
-    } catch(err) {
-        console.log(`Starts Failed: ${err.message}`);
-    }
+startButton.addEventListener('click', async () => {
+  try {
+    await start();
+  } catch (err) {
+    console.log(`Start failed: ${err.message}`);
+  }
 });
 
-startButton.addEventListener('click', start);
 stopButton.addEventListener('click', stop);
 muteButton.addEventListener('click', toggleMute);
 videoButton.addEventListener('click', toggleVideo);
 shareScreenButton.addEventListener('click', shareScreen);
 chatInput.addEventListener('keyup', (event) => {
-    if (event.key === 'Enter') {
-        sendMessage(event.target.value);
-        event.target.value = '';
-    }
+  if (event.key === 'Enter') {
+    sendMessage(event.target.value);
+    event.target.value = '';
+  }
 });
 
-ws.onclose('message', (message) => {
-    const parsedMessage = JSON.parse(Decrypt(message));
+ws.addEventListener('close', (event) => {
+  const parsedMessage = JSON.parse(decrypt(event.data));
 
-    WebAssembly.clients.forEach((client)  => {
-        client.send(encrypt(JSON.stringify(parsedMessage)));
-    })
-})
+  WebAssembly.clients.forEach((client) => {
+    client.send(encrypt(JSON.stringify(parsedMessage)));
+  });
+});
 
 async function start() {
-    localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-    localVideo.srcObject = localStream;
+  localStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+  localVideo.srcObject = localStream;
 
-    peerConnection = createPeerConnection();
-    dataChannel = peerConnection.createDataChannel('chat');
-    onDataChannelCreated(dataChannel);
+  peerConnection = createPeerConnection();
+  dataChannel = peerConnection.createDataChannel('chat');
+  onDataChannelCreated(dataChannel);
 
-    localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
+  localStream.getTracks().forEach(track => peerConnection.addTrack(track, localStream));
 
-    const offer = await peerConnection.createOffer();
-    await peerConnection.setLocalDescription(offer);
+  const offer = await peerConnection.createOffer();
+  await peerConnection.setLocalDescription(offer);
 
-    ws.send(JSON.stringify({ type: 'offer', offer }));
+  ws.send(JSON.stringify({ type: 'offer', offer }));
 }
 
 function stop() {
-    if (peerConnection) {
-        peerConnection.onicecandidate = null;
-        peerConnection.ontrack = nulle;
-        peerConnection.onconnectionstatechange = null;
+  if (peerConnection) {
+    peerConnection.onicecandidate = null;
+    peerConnection.ontrack = null;
+    peerConnection.onconnectionstatechange = null;
 
-        peerConnection.Close()  
-        peerConnection = null;
-    }
+    peerConnection.close();
+    peerConnection = null;
+  }
 
-    if (localStream) {
-        localStream.getTracks().forEach(track => {    //Memory leak removed
-            track.stop();
-        });
+  if (localStream) {
+    localStream.getTracks().forEach(track => {
+      track.stop();
+    });
 
-        localStream = null;
-    }
+    localStream = null;
+  }
 
-    localVideo.srcObject = null;
-    remoteVideo.srcObject = null;
+  localVideo.srcObject = null;
+  remoteVideo.srcObject = null;
 
-
-    startButton.disabled = false;
-    stopButton.disabled = true;
-    muteButton.disabled = true;
-    videoButton.disabled = true;
-    shareScreenButton.disabled = true;
+  startButton.disabled = false;
+  stopButton.disabled = true;
+  muteButton.disabled = true;
+  videoButton.disabled = true;
+  shareScreenButton.disabled = true;
 }
 
 function toggleMute() {
-    if (!localStream) {
-        console.log('Local Stream Unavailable');
-        return;
-    }
+  if (!localStream) {
+    console.log('Local Stream Unavailable');
+    return;
+  }
 
-    const audioTracks = localStream.getAudioTracks();
-    if (audioTracks.length === 0) {
-        console.log('No audio tracks available to toggle');
-        return;
-    }
+  const audioTracks = localStream.getAudioTracks();
+  if (audioTracks.length === 0) {
+    console.log('No audio tracks available to toggle');
+    return;
+  }
 
-    audioTracks.forEach((track) => {
-        track.enabled = !track.enabled;
-        console.log(`Audio track is not ${track.enabled ? 'unmuted' : 'muted'} }`);
-    });
+  audioTracks.forEach((track) => {
+    track.enabled = !track.enabled;
+    console.log(`Audio track is now ${track.enabled ? 'unmuted' : 'muted'}`);
+  });
 
-    muteButton.textContent = audioTracks[0].enabled ? 'Mute' : 'Unmute; :'
-
-    }
+  muteButton.textContent = audioTracks[0].enabled ? 'Mute' : 'Unmute';
+}
 
 function toggleVideo() {
-    if (!localStream) {
-        console.log('Local Stream Unavailable');
-        return;
-    }
+  if (!localStream) {
+    console.log('Local Stream Unavailable');
+    return;
+  }
 
-    const videoTrack = localStream.getVideoTracks()[0];
+  const videoTrack = localStream.getVideoTracks()[0];
 
+  if (!videoTrack) {
+    console.warn('No video track available');
+    return;
+  }
 
-    if (!videoTrack) {
-        consonoe.warn('No video Track Avilable')    //ternary operatos to make console.log shorter.
-        return;
-    }
+  videoTrack.enabled = !videoTrack.enabled;
 
-    videoTrack.enabled = !videoTrack.enabled;
+  console.log(`Video track is now ${videoTrack.enabled ? 'enabled' : 'disabled'}`);
 
-    console.log(`Video ${videoTrack.enabled ? 'enabled' : 'diabled'}`);
-
-    videoButton.textContent = videoTrack.enabled ? 'Disable Video' : 'Enabled video' ;
-
-    }
-
-    const videoTrack = localStream.getVideoTtacks()[0];
-
-    if (!videoTrack) {
-        console.log('No video track available to toggle');
-        return; 
-    }
-
-    videoTrack.enabled = !videoTracke.enabled;
-
-    console.log(`Video track is now ${videoTrack.enabled ? 'enabled' : 'disabled'}`);
+  videoButton.textContent = videoTrack.enabled ? 'Disable Video' : 'Enable Video';
+}
 
 async function shareScreen() {
-    try {
-        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
-        const screenTrack = screenStream.getTracks()[0];
-        const sender = peerConnection.getSenders().find(sender => sender.track.kind === 'video');
-        sender.replaceTrack(screenTrack);
-    } catch(err) {
-        console.error("Error: " + err);
-    }
+  try {
+    const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+    const screenTrack = screenStream.getTracks()[0];
+    const sender = peerConnection.getSenders().find(sender => sender.track.kind === 'video');
+    sender.replaceTrack(screenTrack);
+  } catch (err) {
+    console.error("Error: " + err);
+  }
 }
 
 function createPeerConnection() {
-    const peerConnection = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
-    peerConnection.addEventListener('icecandidate', (event) => {
-        if (event.candidate) {
-            ws.send(JSON.stringify({ type: 'ice-candidate', candidate: event.candidate }));
-        }
-    });
-    peerConnection.addEventListener('track', (event) => {
-        remoteVideo.srcObject = event.streams[0];
-    });
-    peerConnection.addEventListener('connectionstatechange', (event) => {
-        if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed') {
-            stop();
-        }
-    });
+  const peerConnection = new RTCPeerConnection({ iceServers: [{ urls: 'stun:stun.l.google.com:19302' }] });
+  peerConnection.addEventListener('icecandidate', (event) => {
+    if (event.candidate) {
+      ws.send(JSON.stringify({ type: 'ice-candidate', candidate: event.candidate }));
+    }
+  });
+  peerConnection.addEventListener('track', (event) => {
+    remoteVideo.srcObject = event.streams[0];
+  });
+  peerConnection.addEventListener('connectionstatechange', (event) => {
+    if (peerConnection.connectionState === 'disconnected' || peerConnection.connectionState === 'failed') {
+      stop();
+    }
+  });
 
-    return peerConnection;
+  return peerConnection;
 }
 
 function onDataChannelCreated(channel) {
-    channel.onopen = () => console.log('Data channel open');
-    channel.onclose = () => console.log('Data channel closed');
-    channel.onmessage = (event) => addToChatLog('Other: ' + event.data);
+  channel.onopen = () => console.log('Data channel open');
+  channel.onclose = () => console.log('Data channel closed');
+  channel.onmessage = (event) => addToChatLog('Other: ' + event.data);
 }
 
-function sendMessage(message) {       
-    message = message.trim();
+function sendMessage(message) {
+  message = message.trim();
 
-    if (!message) {
-        return;
-    }
+  if (!message) {
+    return;
+  }
 
-    if (dataChannel && dataChannel.readySatate === 'open'){ //condition to check if data channel is open before send a message - whitespace removed as well
-        dataChannel.send(message);
-        addToChatLog('You:' + message);
-    } else {
-        console.log(`Data channel is not open. Message not sent`);
-    }
+  if (dataChannel && dataChannel.readyState === 'open') {
+    dataChannel.send(message);
+    addToChatLog('You: ' + message);
+  } else {
+    console.log('Data channel is not open. Message not sent.');
+  }
 }
-
 
 function addToChatLog(message) {
-    const newMessage = document.createElement('p')
-    const timestamp = new Date().toLocaleTimeString();
-    newMessage.textContent = '${timestamp} = ${message}';
+  const newMessage = document.createElement('p');
+  const timestamp = new Date().toLocaleTimeString();
+  newMessage.textContent = `${timestamp} - ${message}`;
 
-    chatLog.appendChild(newMessage);
-    
-    chatLog.scrollTop = chatLog.scrollHeight;
+  chatLog.appendChild(newMessage);
+  chatLog.scrollTop = chatLog.scrollHeight;
 }
 
+// Stripe Payment Integration
+basicPlanButton.addEventListener('click', () => {
+  handleStripePayment('basic');
+});
 
+proPlanButton.addEventListener('click', () => {
+  handleStripePayment('pro');
+});
 
+function handleStripePayment(plan) {
+  // Implement Stripe payment processing here
+  // Use Stripe API to create a payment session and redirect the user to the checkout page
+  // Handle successful or failed payment on the server-side
+  console.log(`User selected ${plan} plan`);
+}
