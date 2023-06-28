@@ -1,31 +1,32 @@
 require('dotenv').config();
 const express = require('express');
-const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const router = express.Router();
+const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-// Create a Stripe session for the selected plan
-router.post('/create-stripe-session', async (req, res) => {
+// Route for creating a payment session
+router.post('/create-session', async (req, res) => {
   const { plan } = req.body;
 
   try {
+    // Create a payment session using Stripe API
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
         {
-          price: 'YOUR_PRICE_ID', // Replace with the actual Price ID from your Stripe Dashboard
+          price: process.env.STRIPE_PRICE_ID, // Stripe price ID for the selected plan
           quantity: 1,
         },
       ],
       mode: 'subscription',
-      success_url: 'http://localhost:3000/success', // Replace with your success URL
-      cancel_url: 'http://localhost:3000/cancel', // Replace with your cancel URL
-      customer_email: 'test@example.com', // Replace with the customer's email address
+      success_url: `${process.env.CLIENT_URL}/main.html`, // Redirect URL after successful payment
+      cancel_url: `${process.env.CLIENT_URL}/main.html`, // Redirect URL if payment is canceled
+      client_reference_id: req.user.id, // User ID or unique identifier for tracking purposes
     });
 
-    res.json({ url: session.url });
+    res.json({ sessionId: session.id });
   } catch (error) {
-    console.error('Error creating Stripe session:', error);
-    res.status(500).json({ error: 'Failed to create Stripe session' });
+    console.error('Error creating payment session:', error);
+    res.status(500).json({ error: 'Failed to create payment session.' });
   }
 });
 
