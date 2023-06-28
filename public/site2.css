@@ -4,166 +4,85 @@ body {
     margin: 0;
     padding: 0;
     display: flex;
-    flex-direction: column;
-    align-items: center;
     justify-content: center;
-    height: 100vh;
+    align-items: center;
+    min-height: 100vh;
+    font-family: Arial, sans-serif;
   }
   
   #app {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    width: 400px;
+    padding: 20px;
+    background-color: #222;
+    border-radius: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.3);
   }
   
   #auth-component {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
     margin-bottom: 20px;
   }
   
-  .auth-fields {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    margin-bottom: 10px;
-  }
-  
-  .auth-fields input {
-    margin-bottom: 10px;
+  #auth-component input {
+    width: 100%;
     padding: 10px;
-    width: 200px;
-    border-radius: 5px;
-    border: none;
-  }
-  
-  .auth-buttons button {
-    padding: 10px 20px;
-    background-color: #333;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px; /* Add this line for rounded edges */
-  }
-  
-  .auth-buttons button {
-    padding: 10px 20px;
-    background-color: #333;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-    border-radius: 5px;
-  }
-  
-  #plan-component {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 20px;
-  }
-  
-  .plan-box {
-    width: 150px;
-    height: 150px;
-    background-color: #222;
-    color: #fff;
-    border-radius: 10px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    margin-right: 20px;
-  }
-  
-  .plan-box h2 {
-    font-size: 24px;
-  }
-  
-  .plan-box button {
-    margin-top: 10px;
-    padding: 10px 20px;
-    background-color: #333;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-  }
-  
-  #nav-pane {
-    width: 200px;
-    border-right: 1px solid #ccc;
-    padding: 10px;
-    flex-shrink: 0;
+    margin-bottom: 10px;
     background-color: #444;
-  }
-  
-  .nav-button {
-    display: block;
-    margin-bottom: 10px;
-    background-color: #333;
     color: #fff;
     border: none;
-    padding: 10px;
-    cursor: pointer;
+    border-radius: 5px;
   }
   
-  .nav-button:hover {
-    background-color: #555;
-  }
-  
-  #content {
-    flex-grow: 1;
+  #auth-buttons {
     display: flex;
-    flex-direction: column;
     justify-content: space-between;
   }
   
-  #video-component {
-    flex-grow: 1;
-    position: relative;
-  }
-  
-  #video-component video {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    position: absolute;
-    top: 0;
-    left: 0;
-  }
-  
-  #chat-component,
-  #calendar-component {
-    flex-grow: 1;
-    padding: 10px;
-    overflow: auto;
-    background-color: #222;
-    color: #fff;
-  }
-  
-  #action-buttons {
-    display: flex;
-    justify-content: space-around;
-    padding: 10px;
-    background-color: #444;
-    border-top: 1px solid #ccc;
-  }
-  
-  #action-buttons button {
+  #auth-buttons button {
     padding: 10px 20px;
-    background-color: #333;
+    background-color: #555;
     color: #fff;
     border: none;
+    border-radius: 5px;
     cursor: pointer;
   }
   
-  #action-buttons button:hover {
-    background-color: #555;
+  #auth-buttons button:hover {
+    background-color: #777;
   }
   
-  #chat-input,
-  #chat-log {
-    background-color: #222;
+  #pro-component {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .pro-content {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  
+  .pro-content h2 {
+    font-size: 24px;
+    margin-bottom: 10px;
+  }
+  
+  .pro-content p {
+    margin-bottom: 20px;
+  }
+  
+  #pro-button {
+    padding: 10px 20px;
+    background-color: #00bfff;
     color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+  
+  #pro-button:hover {
+    background-color: #00a5e5;
   }
   

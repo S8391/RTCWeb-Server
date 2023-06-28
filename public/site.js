@@ -220,7 +220,6 @@ function addToChatLog(message) {
   chatLog.scrollTop = chatLog.scrollHeight;
 }
 
-// Stripe Payment Integration
 basicPlanButton.addEventListener('click', () => {
   handleStripePayment('basic');
 });
@@ -230,8 +229,19 @@ proPlanButton.addEventListener('click', () => {
 });
 
 function handleStripePayment(plan) {
-  // Implement Stripe payment processing here
-  // Use Stripe API to create a payment session and redirect the user to the checkout page
-  // Handle successful or failed payment on the server-side
-  console.log(`User selected ${plan} plan`);
+  fetch('/create-stripe-session', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ plan }),
+  })
+    .then((response) => response.json())
+    .then((data) => {
+      // Redirect the user to the Stripe Checkout page
+      window.location.href = data.url;
+    })
+    .catch((error) => {
+      console.error('Error creating Stripe session:', error);
+    });
 }
