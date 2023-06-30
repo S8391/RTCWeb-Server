@@ -9,6 +9,7 @@ const chatInput = document.querySelector('#chat-input');
 const chatLog = document.querySelector('#chat-log');
 const basicPlanButton = document.querySelector('#basic-plan-button');
 const proPlanButton = document.querySelector('#pro-plan-button');
+const ticketButton = document.querySelector('#ticket-button'); // New ticket button
 
 let localStream;
 let peerConnection;
@@ -67,6 +68,8 @@ chatInput.addEventListener('keyup', (event) => {
     event.target.value = '';
   }
 });
+
+ticketButton.addEventListener('click', openTicketPage); // Event listener for the ticket button
 
 ws.addEventListener('close', (event) => {
   const parsedMessage = JSON.parse(decrypt(event.data));
@@ -218,6 +221,11 @@ function addToChatLog(message) {
 
   chatLog.appendChild(newMessage);
   chatLog.scrollTop = chatLog.scrollHeight;
+}
+
+function openTicketPage() {
+  const ticketWindow = window.open('tickets.html', '_blank'); // Open ticket page in a new tab
+  ticketWindow.focus();
 }
 
 basicPlanButton.addEventListener('click', () => {
