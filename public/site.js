@@ -7,9 +7,7 @@ const videoButton = document.querySelector('#video-button');
 const shareScreenButton = document.querySelector('#share-screen-button');
 const chatInput = document.querySelector('#chat-input');
 const chatLog = document.querySelector('#chat-log');
-const basicPlanButton = document.querySelector('#basic-plan-button');
-const proPlanButton = document.querySelector('#pro-plan-button');
-const ticketButton = document.querySelector('#ticket-button'); // New ticket button
+const ticketButton = document.querySelector('#tickets-nav-button'); // New ticket button
 
 let localStream;
 let peerConnection;
@@ -226,30 +224,4 @@ function addToChatLog(message) {
 function openTicketPage() {
   const ticketWindow = window.open('tickets.html', '_blank'); // Open ticket page in a new tab
   ticketWindow.focus();
-}
-
-basicPlanButton.addEventListener('click', () => {
-  handleStripePayment('basic');
-});
-
-proPlanButton.addEventListener('click', () => {
-  handleStripePayment('pro');
-});
-
-function handleStripePayment(plan) {
-  fetch('/create-stripe-session', {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ plan }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      // Redirect the user to the Stripe Checkout page
-      window.location.href = data.url;
-    })
-    .catch((error) => {
-      console.error('Error creating Stripe session:', error);
-    });
 }
