@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Profile</title>
+  <link rel="stylesheet" type="text/css" href="public/css/site.css">
+</head>
+<body>
+  <div class="container">
+    <div id="app">
+      <!-- Navigation Component -->
+      <div id="nav-pane">
+        <div id="nav-buttons">
+          <button class="nav-button" id="chat-nav-button"><i class="fas fa-comment"></i> Chat</button>
+          <button class="nav-button" id="video-nav-button"><i class="fas fa-video"></i> Video</button>
+          <button class="nav-button" id="calendar-nav-button"><i class="fas fa-calendar"></i> Calendar</button>
+          <button class="nav-button" id="tickets-nav-button"><i class="fas fa-ticket-alt"></i> Tickets</button>
+        </div>
+      </div>
+
+      <!-- Content Component -->
+      <div id="content">
+        <div id="video-component" style="display: none;">
+          <video id="local-video" autoplay playsinline></video>
+          <video id="remote-video" autoplay playsinline></video>
+        </div>
+        <div id="chat-component" style="display: none;">
+          <input id="chat-input" type="text" placeholder="Type a message" />
+          <div id="chat-log"></div>
+        </div>
+        <div id="calendar-component" style="display: none;">
+          <!-- Calendar Component -->
+          <div id="calendar"></div>
+        </div>
+        <div id="pro-component" style="display: none;">
+          <div class="pro-content">
+            <h2>Upgrade to Pro</h2>
+            <p>Unlock premium features and access exclusive content.</p>
+            <button id="pro-button">Upgrade</button>
+          </div>
+          <div id="payment-status"></div>
+        </div>
+      </div>
+
+      <!-- Action Component -->
+      <div id="action-buttons" style="display: none;">
+        <button id="start-button">Start</button>
+        <button id="stop-button">Stop</button>
+        <button id="mute-button">Mute</button>
+        <button id="video-button">Toggle Video</button>
+        <button id="share-screen-button">Share Screen</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://kit.fontawesome.com/your-font-awesome-kit.js"></script>
+  <script src="public/js/site.js"></script>
+</body>
+</html>
